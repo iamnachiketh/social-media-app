@@ -37,10 +37,24 @@ app.get('/users/:username', (req, res) => {
 
 app.get('/users/:username/followers', (req, res) => {
 
+  Users.findOne({name:req.params.username}).then(data=>{
+    if(data){
+     res.send(data.followers)
+    }
+}).catch(err=>{
+console.log(err);
+})
 
 });
 
 app.get('/users/:username/following', (req, res) => {
+  Users.findOne({name:req.params.username}).then(data=>{
+       if(data){
+        res.send(data.following)
+       }
+}).catch(err=>{
+  console.log(err);
+})
 
 
 });
@@ -48,11 +62,11 @@ app.get('/users/:username/following', (req, res) => {
 //before using this follow please use login route first after login please
 // do add authorization token in the postman since user has to be loggined to follow someone.
  
-app.post('users/:username/follow', requireLogin ,(req, res) => {
+app.post('/users/:username/follow', requireLogin ,(req, res) => {
 
-  const fetchId = Users.find({ name: req.params.username })
-  console.log(req.params.username);
-  Users.findByIdAndUpdate(fetchId.userId, {
+  const Id = Users.findOne({ name: req.params.username })
+  console.log("this is fetchid error",Id);
+  Users.findByIdAndUpdate(Id.userId, {
     $push: { followers: req.user.userId }
   }, {
     new: true
@@ -63,7 +77,7 @@ app.post('users/:username/follow', requireLogin ,(req, res) => {
       res.send('followed',result)
     }
     Users.findByIdAndUpdate(req.user.userId, {
-      $push: { following: fetchId.userId }
+      $push: { following: Id.userId }
     }, { new: true }, (err, r) => {
       if (err) {
         res.send('following error')
@@ -87,7 +101,7 @@ app.post('/login', (req, res) => {
     }
     bcrypt.compare(password, savedUser.password).then(doMatch => {
       if (doMatch) {
-        //res.send('successfull !!!')
+
         const fetchId = Users.findOne({email:savedUser.email});
         const token = jwt.sign({userId:fetchId.userId},JWT_SECRET)
          res.send({token:token})

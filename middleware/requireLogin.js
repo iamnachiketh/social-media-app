@@ -11,16 +11,19 @@ module.exports = (req,res,next)=>{
         console.log('this is first')
        return res.send({error:"you must be loggedIn1"})
     }
-    const token = authorization.replace("bearer","");
+    const token = authorization.replace(" ");
+
      jwt.verify(token,JWT_SECRET,(err,payload)=>{
         if(err){
-            return res.status(200).send({error:"you must be loggedIn"});
+            console.log(err);
+            return  res.status(200).send({error:"you must be loggedIn"});
         }
     const {userId} = payload;
+    console.log('userId of payload',userId);
     Users.findById(userId).then(userdata=>{
         req.user = userdata;
     }).catch(err=>{
-        console.log(err);
+        console.log('catch error',err);
     })
     next();
      })
